@@ -21,22 +21,19 @@ type Aggregator struct {
 }
 
 func NewAggregator(cfg *Configuration) *Aggregator {
-	logger := cfg.Logger
-	if logger == nil {
-		logger = &defaultLogger{}
-	}
 	return &Aggregator{
 		metrics:       internal.NewUsageMetrics(),
 		serverVersion: cfg.ServerVersion,
 		flushTicker:   time.NewTicker(flushInterval),
-		fieldChan:     make(chan *FieldMessage),
+		fieldChan:     make(chan *FieldMessage, cfg.getFieldBufferSize()),
 		stopChan:      make(chan interface{}),
 		sender:        NewSender(cfg),
-		logger:        logger,
+		logger:        cfg.getLogger(),
 	}
 }
 
 func (a *Aggregator) Start() {
+	go a.sender.Start()
 	for {
 		select {
 		case <-a.stopChan:
@@ -58,7 +55,12 @@ func (a *Aggregator) Stop() {
 }
 
 func (a *Aggregator) PushField(msg *FieldMessage) {
-	a.fieldChan <- msg
+	select {
+	case a.fieldChan <- msg:
+		return
+	default:
+		a.logger.Warn("graphmetrics aggregator buffer overflowing, dropping message", nil)
+	}
 }
 
 func (a *Aggregator) processField(msg *FieldMessage) {

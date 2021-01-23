@@ -25,18 +25,14 @@ type Sender struct {
 }
 
 func NewSender(cfg *Configuration) *Sender {
-	logger := cfg.Logger
-	if logger == nil {
-		logger = &defaultLogger{}
-	}
 	return &Sender{
 		client:      retryablehttp.NewClient(),
 		wg:          &sync.WaitGroup{},
-		url:         fmt.Sprintf("https://%s/reporting/metrics", cfg.Endpoint),
+		url:         fmt.Sprintf("https://%s/reporting/metrics", cfg.getEndpoint()),
 		apiKey:      cfg.ApiKey,
 		metricsChan: make(chan *internal.UsageMetrics),
 		stopChan:    make(chan interface{}),
-		logger:      logger,
+		logger:      cfg.getLogger(),
 	}
 }
 
