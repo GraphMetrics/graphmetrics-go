@@ -1,0 +1,90 @@
+package graphmetrics
+
+import (
+	"time"
+
+	"github.com/graphmetrics/graphmetrics-go/internal"
+)
+
+const flushInterval = 1 * time.Minute
+
+type Aggregator struct {
+	metrics       *internal.UsageMetrics
+	serverVersion string
+
+	flushTicker *time.Ticker
+	fieldChan   chan *FieldMessage
+	stopChan    chan interface{}
+	sender      *Sender
+
+	logger Logger
+}
+
+func NewAggregator(cfg *Configuration) *Aggregator {
+	logger := cfg.Logger
+	if logger == nil {
+		logger = &defaultLogger{}
+	}
+	return &Aggregator{
+		metrics:       internal.NewUsageMetrics(),
+		serverVersion: cfg.ServerVersion,
+		flushTicker:   time.NewTicker(flushInterval),
+		fieldChan:     make(chan *FieldMessage),
+		stopChan:      make(chan interface{}),
+		sender:        NewSender(cfg),
+		logger:        logger,
+	}
+}
+
+func (a *Aggregator) Start() {
+	for {
+		select {
+		case <-a.stopChan:
+			return
+		case <-a.flushTicker.C:
+			a.flush()
+		case f := <-a.fieldChan:
+			a.processField(f)
+		}
+	}
+}
+
+func (a *Aggregator) Stop() {
+	a.stopChan <- nil
+	for msg := range a.fieldChan {
+		a.processField(msg)
+	}
+	a.sender.Stop()
+}
+
+func (a *Aggregator) PushField(msg *FieldMessage) {
+	a.fieldChan <- msg
+}
+
+func (a *Aggregator) processField(msg *FieldMessage) {
+	// Find field metric
+	typesMetrics := a.metrics.FindTypesMetrics(msg.Client.Name, msg.Client.Version, a.serverVersion)
+	typeMetric := typesMetrics.FindTypeMetric(msg.TypeName)
+	fieldMetric := typeMetric.FindFieldMetric(msg.FieldName)
+
+	// Insert message
+	err := fieldMetric.Histogram.Add(float64(msg.Duration))
+	if err != nil {
+		a.logger.Error("unable to insert field duration", map[string]interface{}{
+			"error":    err,
+			"duration": msg.Duration,
+			"field":    msg.FieldName,
+			"type":     msg.TypeName,
+		})
+		return
+	}
+	fieldMetric.ErrorCount += internal.Bool2Int(msg.Error != nil)
+	fieldMetric.ErrorCount += 1
+	fieldMetric.ReturnType = msg.ReturnType
+}
+
+func (a *Aggregator) flush() {
+	metrics := a.metrics
+	a.metrics = internal.NewUsageMetrics()
+	a.sender.Send(metrics)
+}
