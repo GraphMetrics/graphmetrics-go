@@ -2,6 +2,7 @@ package internal
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/graphmetrics/ddsketch-go/ddsketch"
 )
@@ -85,7 +86,8 @@ func (t *ContextualizedTypesMetrics) FindTypeMetric(typeName string) *TypeMetric
 }
 
 type UsageMetrics struct {
-	Types []ContextualizedTypesMetrics `json:"types"`
+	Timestamp time.Time                    `json:"timestamp"`
+	Types     []ContextualizedTypesMetrics `json:"types"`
 }
 
 func (u *UsageMetrics) FindTypesMetrics(ClientName string, ClientVersion string, ServerVersion string) *ContextualizedTypesMetrics {
@@ -110,6 +112,7 @@ func (u *UsageMetrics) FindTypesMetrics(ClientName string, ClientVersion string,
 
 func NewUsageMetrics() *UsageMetrics {
 	return &UsageMetrics{
-		Types: make([]ContextualizedTypesMetrics, 0, clientsAllocation),
+		Timestamp: time.Time{},
+		Types:     make([]ContextualizedTypesMetrics, 0, clientsAllocation),
 	}
 }

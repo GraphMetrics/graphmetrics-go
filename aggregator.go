@@ -88,5 +88,6 @@ func (a *Aggregator) processField(msg *FieldMessage) {
 func (a *Aggregator) flush() {
 	metrics := a.metrics
 	a.metrics = internal.NewUsageMetrics()
+	metrics.Timestamp = time.Now() // We prefer end time as the TS
 	a.sender.Send(metrics)
 }
