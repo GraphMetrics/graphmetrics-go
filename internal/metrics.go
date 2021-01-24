@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/graphmetrics/ddsketch-go/ddsketch"
+	"github.com/graphmetrics/sketches-go/ddsketch"
 )
 
 const (
