@@ -18,10 +18,10 @@ github.com/google/gofuzz v1.2.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/
 github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/mux v1.6.1/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
-github.com/graphmetrics/ddsketch-go v0.1.0 h1:W4m+zjtNT1Q+1j5TOPo6zVh3KnTIEiJas6hIIjDGY5M=
-github.com/graphmetrics/ddsketch-go v0.1.0/go.mod h1:01meAI2z85mIxTWpI9SZWuizaEcRsWnDfp5yq3fey4g=
-github.com/graphmetrics/graphmetrics-go v0.0.0-20210123204759-354282601631 h1:DlhJWp/X65tnJF9tI3zJROi8E146SPY0rpwLnuSMQM8=
-github.com/graphmetrics/graphmetrics-go v0.0.0-20210123204759-354282601631/go.mod h1:cA2rjU8nKY44hmS87DwOMp4uf4rmxU9dq1l7Ky9trPU=
+github.com/graphmetrics/graphmetrics-go v0.1.0 h1:IAPoLetkAdZ87oOgKiXanpYowZ9G7ZeJ7QmpalacULA=
+github.com/graphmetrics/graphmetrics-go v0.1.0/go.mod h1:9sfh5np9ObFcAHtD4Sw/3SekB69posrPmF9YrDsNjrY=
+github.com/graphmetrics/sketches-go v0.1.0 h1:L282eGlCobWvy32aoJuXySmSrr8SPqfVk9l7ng0eZcs=
+github.com/graphmetrics/sketches-go v0.1.0/go.mod h1:dQhQn7YYW04ysDLao9hlgtZmrC5PRvbyxrGUg57+I3o=
 github.com/hashicorp/go-cleanhttp v0.5.1 h1:dH3aiDG9Jvb5r5+bYHsikaOUIpcM0xvgMXVoDkXMzJM=
 github.com/hashicorp/go-cleanhttp v0.5.1/go.mod h1:JpRdi6/HCYpAwUzNwuwqhbovhLtngrth3wmdIIUrZ80=
 github.com/hashicorp/go-hclog v0.9.2 h1:CG6TE5H9/JXsFWJCfoIVpKFIkFe6ysEuHirp4DxCsHI=
@@ -55,7 +55,6 @@ github.com/shurcooL/vfsgen v0.0.0-20180121065927-ffb13db8def0/go.mod h1:TrYk7fJV
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.2.1/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
-github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/stretchr/testify v1.6.1 h1:hDPOHmpOpP40lSULcqw7IrRb/u7w6RpDC9399XyoNd0=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
