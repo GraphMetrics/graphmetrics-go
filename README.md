@@ -1,4 +1,7 @@
 # GraphMetrics
+[![Go Reference](https://pkg.go.dev/badge/github.com/graphmetrics/graphmetrics-go.svg)](https://pkg.go.dev/github.com/graphmetrics/graphmetrics-go)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/graphmetrics/graphmetrics-go)](https://github.com/GraphMetrics/graphmetrics-go)
+[![Go Report](https://goreportcard.com/badge/github.com/GraphMetrics/graphmetrics-go)](https://goreportcard.com/report/github.com/GraphMetrics/graphmetrics-go)
 
 This is the Go SDK for GraphMetrics.
 
