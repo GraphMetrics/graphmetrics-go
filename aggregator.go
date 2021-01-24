@@ -55,6 +55,9 @@ func (a *Aggregator) Stop() {
 }
 
 func (a *Aggregator) PushField(msg *FieldMessage) {
+	if msg.TypeName[0:2] == "__" || msg.FieldName[0:2] == "__" {
+		return
+	}
 	select {
 	case a.fieldChan <- msg:
 		return
@@ -86,6 +89,9 @@ func (a *Aggregator) processField(msg *FieldMessage) {
 }
 
 func (a *Aggregator) flush() {
+	if len(a.metrics.Types) == 0 {
+		return
+	}
 	metrics := a.metrics
 	a.metrics = internal.NewUsageMetrics()
 	metrics.Timestamp = time.Now() // We prefer end time as the TS
