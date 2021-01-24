@@ -18,8 +18,8 @@ github.com/google/gofuzz v1.2.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/
 github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/mux v1.6.1/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
-github.com/graphmetrics/graphmetrics-go v0.1.0 h1:IAPoLetkAdZ87oOgKiXanpYowZ9G7ZeJ7QmpalacULA=
-github.com/graphmetrics/graphmetrics-go v0.1.0/go.mod h1:9sfh5np9ObFcAHtD4Sw/3SekB69posrPmF9YrDsNjrY=
+github.com/graphmetrics/graphmetrics-go v0.1.1 h1:mMraqcsAPatQ29PR40fszai00xIo8YeSc/6Sz9jXPd0=
+github.com/graphmetrics/graphmetrics-go v0.1.1/go.mod h1:9sfh5np9ObFcAHtD4Sw/3SekB69posrPmF9YrDsNjrY=
 github.com/graphmetrics/sketches-go v0.1.0 h1:L282eGlCobWvy32aoJuXySmSrr8SPqfVk9l7ng0eZcs=
 github.com/graphmetrics/sketches-go v0.1.0/go.mod h1:dQhQn7YYW04ysDLao9hlgtZmrC5PRvbyxrGUg57+I3o=
 github.com/hashicorp/go-cleanhttp v0.5.1 h1:dH3aiDG9Jvb5r5+bYHsikaOUIpcM0xvgMXVoDkXMzJM=
