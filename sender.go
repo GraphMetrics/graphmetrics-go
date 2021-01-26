@@ -7,6 +7,7 @@ import (
 	"io"
 	"sync"
 
+	"github.com/graphmetrics/logger-go"
 	"github.com/hashicorp/go-retryablehttp"
 
 	"github.com/graphmetrics/graphmetrics-go/internal"
@@ -21,14 +22,14 @@ type Sender struct {
 	metricsChan chan *internal.UsageMetrics
 	stopChan    chan interface{}
 
-	logger Logger
+	logger logger.Logger
 }
 
 func NewSender(cfg *Configuration) *Sender {
 	return &Sender{
 		client:      retryablehttp.NewClient(),
 		wg:          &sync.WaitGroup{},
-		url:         fmt.Sprintf("https://%s/reporting/metrics", cfg.getEndpoint()),
+		url:         fmt.Sprintf("%s://%s/reporting/metrics", cfg.getProtocol(), cfg.getEndpoint()),
 		apiKey:      cfg.ApiKey,
 		metricsChan: make(chan *internal.UsageMetrics),
 		stopChan:    make(chan interface{}),

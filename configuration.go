@@ -3,6 +3,8 @@ package graphmetrics
 import (
 	"context"
 
+	"github.com/graphmetrics/logger-go"
+
 	"github.com/graphmetrics/graphmetrics-go/client"
 )
 
@@ -15,13 +17,14 @@ type Configuration struct {
 	ApiKey          string
 	ServerVersion   string
 	ClientExtractor client.Extractor
-	Logger          Logger
+	Logger          logger.Logger
 	Advanced        *AdvancedConfiguration
 }
 
 type AdvancedConfiguration struct {
 	FieldBufferSize int // If field metrics are dropped consider increasing it
 	Endpoint        string
+	Http            bool
 }
 
 func (c *Configuration) getEndpoint() string {
@@ -31,6 +34,13 @@ func (c *Configuration) getEndpoint() string {
 	return defaultEndpoint
 }
 
+func (c *Configuration) getProtocol() string {
+	if c.Advanced != nil && c.Advanced.Http {
+		return "http"
+	}
+	return "https"
+}
+
 func (c *Configuration) getFieldBufferSize() int {
 	if c.Advanced != nil && c.Advanced.FieldBufferSize != 0 {
 		return c.Advanced.FieldBufferSize
@@ -38,11 +48,11 @@ func (c *Configuration) getFieldBufferSize() int {
 	return defaultFieldBufferSize
 }
 
-func (c *Configuration) getLogger() Logger {
+func (c *Configuration) getLogger() logger.Logger {
 	if c.Logger != nil {
 		return c.Logger
 	}
-	return &defaultLogger{}
+	return logger.NewDefault()
 }
 
 func (c *Configuration) getClientExtractor() client.Extractor {

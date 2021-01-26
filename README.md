@@ -32,7 +32,7 @@ The SDK needs a few elements to be properly configured using the `graphmetrics.C
 - `ApiKey`: Your environment api key
 - `ServerVersion`: (Optional) The version of the server, necessary to catch regressions between releases
 - `ClientExtractor`: (Optional) Function that retrieves the client details from the context, necessary to differentiate queries coming from different clients
-- `Logger`: (Optional) A structure logger that respects the interface, otherwise golang "log" is used
+- `Logger`: (Optional) A structure logger that respects the interface, otherwise golang "log" is used. Adapters are provided for popular logger, see the [logger-go package](https://github.com/GraphMetrics/logger-go).
 
 ### Client extractor
 

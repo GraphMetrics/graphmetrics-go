@@ -3,6 +3,8 @@ package graphmetrics
 import (
 	"time"
 
+	"github.com/graphmetrics/logger-go"
+
 	"github.com/graphmetrics/graphmetrics-go/internal"
 )
 
@@ -17,7 +19,7 @@ type Aggregator struct {
 	stopChan    chan interface{}
 	sender      *Sender
 
-	logger Logger
+	logger logger.Logger
 }
 
 func NewAggregator(cfg *Configuration) *Aggregator {

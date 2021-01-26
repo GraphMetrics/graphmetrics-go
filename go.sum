@@ -4,6 +4,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/google/gofuzz v1.2.0 h1:xRy4A+RhZaiKjJ1bPfwQ8sedCA+YS2YcCHW6ec7JMi0=
 github.com/google/gofuzz v1.2.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
+github.com/graphmetrics/logger-go v0.1.0 h1:sLZzQBa1YLJofcaPtbzZRmvnqFhZSU7+qjKx22OWQSQ=
+github.com/graphmetrics/logger-go v0.1.0/go.mod h1:T98PXH1RF/nRghhhnKr8S7N96H5A7beuXXwzJaBl0dw=
 github.com/graphmetrics/sketches-go v0.1.0 h1:L282eGlCobWvy32aoJuXySmSrr8SPqfVk9l7ng0eZcs=
 github.com/graphmetrics/sketches-go v0.1.0/go.mod h1:dQhQn7YYW04ysDLao9hlgtZmrC5PRvbyxrGUg57+I3o=
 github.com/hashicorp/go-cleanhttp v0.5.1 h1:dH3aiDG9Jvb5r5+bYHsikaOUIpcM0xvgMXVoDkXMzJM=
