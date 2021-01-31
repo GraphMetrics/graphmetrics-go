@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"sync"
+	"time"
 
 	"github.com/graphmetrics/logger-go"
 	"github.com/hashicorp/go-retryablehttp"
@@ -26,8 +27,11 @@ type Sender struct {
 }
 
 func NewSender(cfg *Configuration) *Sender {
+	c := retryablehttp.NewClient()
+	c.RetryWaitMax = 1 * time.Minute
+	c.RetryMax = 8 // Will retry for ~5 minutes
 	return &Sender{
-		client:      retryablehttp.NewClient(),
+		client:      c,
 		wg:          &sync.WaitGroup{},
 		url:         fmt.Sprintf("%s://%s/reporting/metrics", cfg.getProtocol(), cfg.getEndpoint()),
 		apiKey:      cfg.ApiKey,
