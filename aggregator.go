@@ -86,7 +86,7 @@ func (a *Aggregator) processField(msg *FieldMessage) {
 		return
 	}
 	fieldMetric.ErrorCount += internal.Bool2Int(msg.Error != nil)
-	fieldMetric.ErrorCount += 1
+	fieldMetric.Count += 1
 	fieldMetric.ReturnType = msg.ReturnType
 }
 
