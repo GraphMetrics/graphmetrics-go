@@ -18,8 +18,8 @@ github.com/google/gofuzz v1.2.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/
 github.com/gorilla/context v0.0.0-20160226214623-1ea25387ff6f/go.mod h1:kBGZzfjB9CEq2AlWe17Uuf7NDRt0dE0s8S51q0aT7Yg=
 github.com/gorilla/mux v1.6.1/go.mod h1:1lud6UwP+6orDFRuTfBEV8e9/aOM/c4fVVCaMa2zaAs=
 github.com/gorilla/websocket v1.4.2/go.mod h1:YR8l580nyteQvAITg2hZ9XVh4b55+EU/adAjf1fMHhE=
-github.com/graphmetrics/graphmetrics-go v0.2.1 h1:VTqC8sAywr/Ni+JRsTMYgrVyA92YzK4Dji2wkzEiERc=
-github.com/graphmetrics/graphmetrics-go v0.2.1/go.mod h1:J/Xmb5/IaTqJVy889hznFYY/6hU7Hd7aEn59bkznU+U=
+github.com/graphmetrics/graphmetrics-go v0.2.2 h1:/HHWkGbGazR27Y3Hua/vaVrWgtp/th9eOJmOanxkX/4=
+github.com/graphmetrics/graphmetrics-go v0.2.2/go.mod h1:J/Xmb5/IaTqJVy889hznFYY/6hU7Hd7aEn59bkznU+U=
 github.com/graphmetrics/logger-go v0.1.0 h1:sLZzQBa1YLJofcaPtbzZRmvnqFhZSU7+qjKx22OWQSQ=
 github.com/graphmetrics/logger-go v0.1.0/go.mod h1:T98PXH1RF/nRghhhnKr8S7N96H5A7beuXXwzJaBl0dw=
 github.com/graphmetrics/sketches-go v0.2.0 h1:VVh4GE3rXlmiTa0jJN/MJgn2AIl/qV7fbUge0h8X9as=
