@@ -58,7 +58,7 @@ func (e *extensionImpl) InterceptField(ctx context.Context, next graphql.Resolve
 	e.agg.PushField(&graphmetrics.FieldMessage{
 		TypeName:   field.Object,
 		FieldName:  field.Field.Name,
-		ReturnType: field.Field.Definition.Type.NamedType,
+		ReturnType: field.Field.Definition.Type.String(),
 		Error:      err,
 		Duration:   duration,
 		Client:     e.clientExt(ctx),
