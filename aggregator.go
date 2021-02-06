@@ -48,12 +48,15 @@ func (a *Aggregator) Start() {
 	}
 }
 
-func (a *Aggregator) Stop() {
+func (a *Aggregator) Stop() error {
+	a.logger.Debug("stopping aggregator", nil)
 	a.stopChan <- nil
+	close(a.fieldChan)
 	for msg := range a.fieldChan {
 		a.processField(msg)
 	}
-	a.sender.Stop()
+	a.flush()
+	return a.sender.Stop()
 }
 
 func (a *Aggregator) PushField(msg *FieldMessage) {

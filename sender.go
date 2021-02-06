@@ -3,6 +3,7 @@ package graphmetrics
 import (
 	"compress/gzip"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"sync"
@@ -89,13 +90,30 @@ func (s *Sender) send(metrics *internal.UsageMetrics) {
 	}()
 }
 
-func (s *Sender) Stop() {
+func (s *Sender) Stop() error {
+	s.logger.Debug("stopping sender", nil)
+
+	// Send remaining metrics
 	s.stopChan <- nil
+	close(s.metricsChan)
 	for sketch := range s.metricsChan {
 		s.send(sketch)
 	}
-	// TODO: Add a timeout for this wait
-	s.wg.Wait()
+
+	// Wait or timeout
+	// Note: this can create goroutine leak, but we don't care since Stop is only call on server exit
+	c := make(chan struct{})
+	go func() {
+		defer close(c)
+		s.wg.Wait()
+	}()
+	select {
+	case <-c:
+		return nil
+	case <-time.After(10 * time.Second):
+		s.logger.Error("sending remaining metrics timed out", nil)
+		return errors.New("sending remaining metrics timed out")
+	}
 }
 
 func marshalGzip(w io.Writer, i interface{}) error {
