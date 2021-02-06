@@ -30,6 +30,7 @@ func NewSender(cfg *Configuration) *Sender {
 	c := retryablehttp.NewClient()
 	c.RetryWaitMax = 1 * time.Minute
 	c.RetryMax = 8 // Will retry for ~5 minutes
+	c.Logger = internal.NewRetryableLogger(cfg.getLogger())
 	return &Sender{
 		client:      c,
 		wg:          &sync.WaitGroup{},
