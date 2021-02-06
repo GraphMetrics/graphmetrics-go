@@ -67,6 +67,5 @@ func (e *extensionImpl) InterceptField(ctx context.Context, next graphql.Resolve
 }
 
 func (e *extensionImpl) Close() error {
-	e.agg.Stop()
-	return nil
+	return e.agg.Stop()
 }
