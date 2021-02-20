@@ -18,7 +18,7 @@ func ApolloMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
 		details := Details{
-			Name: r.Header.Get("apollographql-client-name"),
+			Name:    r.Header.Get("apollographql-client-name"),
 			Version: r.Header.Get("apollographql-client-version"),
 		}
 		ctx = context.WithValue(ctx, apolloClientDetailsKey, details)
