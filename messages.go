@@ -18,6 +18,7 @@ type FieldMessage struct {
 type OperationMessage struct {
 	Name      string
 	Hash      string
+	Signature string
 	HasErrors bool
 	Duration  time.Duration
 	Client    client.Details

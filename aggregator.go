@@ -12,8 +12,10 @@ import (
 const flushInterval = 1 * time.Minute
 
 type Aggregator struct {
-	metrics       *models.UsageMetrics
-	serverVersion string
+	metrics         *models.UsageMetrics
+	definitions     *models.UsageDefinitions
+	knownOperations map[string]bool
+	serverVersion   string
 
 	flushTicker   *time.Ticker
 	fieldChan     chan *FieldMessage
@@ -26,19 +28,20 @@ type Aggregator struct {
 
 func NewAggregator(cfg *Configuration) *Aggregator {
 	return &Aggregator{
-		metrics:       models.NewUsageMetrics(),
-		serverVersion: cfg.ServerVersion,
-		flushTicker:   time.NewTicker(flushInterval),
-		fieldChan:     make(chan *FieldMessage, cfg.getFieldBufferSize()),
-		operationChan: make(chan *OperationMessage, cfg.getOperationBufferSize()),
-		stopChan:      make(chan interface{}),
-		sender:        NewSender(cfg),
-		logger:        cfg.getLogger(),
+		metrics:         models.NewUsageMetrics(),
+		definitions:     models.NewUsageDefinitions(),
+		knownOperations: make(map[string]bool, 10),
+		serverVersion:   cfg.ServerVersion,
+		flushTicker:     time.NewTicker(flushInterval),
+		fieldChan:       make(chan *FieldMessage, cfg.getFieldBufferSize()),
+		operationChan:   make(chan *OperationMessage, cfg.getOperationBufferSize()),
+		stopChan:        make(chan interface{}),
+		sender:          NewSender(cfg),
+		logger:          cfg.getLogger(),
 	}
 }
 
 func (a *Aggregator) Start() {
-	go a.sender.Start()
 	for {
 		select {
 		case <-a.stopChan:
@@ -60,6 +63,10 @@ func (a *Aggregator) Stop() error {
 	close(a.fieldChan)
 	for msg := range a.fieldChan {
 		a.processField(msg)
+	}
+	close(a.operationChan)
+	for msg := range a.operationChan {
+		a.processOperation(msg)
 	}
 	a.flush()
 	return a.sender.Stop()
@@ -109,7 +116,7 @@ func (a *Aggregator) processField(msg *FieldMessage) {
 }
 
 func (a *Aggregator) processOperation(msg *OperationMessage) {
-	// Find operations metric
+	// Find operations metrics
 	metrics := a.metrics.FindContextMetrics(msg.Client.Name, msg.Client.Version, a.serverVersion)
 	operationMetrics := metrics.FindOperationMetrics(msg.Hash)
 
@@ -125,14 +132,30 @@ func (a *Aggregator) processOperation(msg *OperationMessage) {
 	}
 	operationMetrics.ErrorCount += conversion.Bool2Int(msg.HasErrors)
 	operationMetrics.Count += 1
+
+	// Insert definition
+	if !a.knownOperations[msg.Hash] {
+		a.definitions.Operations = append(a.definitions.Operations, models.OperationDefinition{
+			Name:      msg.Name,
+			Hash:      msg.Hash,
+			Signature: msg.Signature,
+		})
+		a.knownOperations[msg.Hash] = true
+	}
 }
 
 func (a *Aggregator) flush() {
-	if len(a.metrics.Metrics) == 0 {
-		return
+	now := time.Now() // We prefer end time as the TS
+	if len(a.metrics.Metrics) > 0 {
+		metrics := a.metrics
+		a.metrics = models.NewUsageMetrics()
+		metrics.Timestamp = now
+		a.sender.SendMetrics(metrics)
 	}
-	metrics := a.metrics
-	a.metrics = models.NewUsageMetrics()
-	metrics.Timestamp = time.Now() // We prefer end time as the TS
-	a.sender.Send(metrics)
+	if len(a.definitions.Operations) > 0 {
+		definitions := a.definitions
+		a.definitions = models.NewUsageDefinitions()
+		definitions.Timestamp = now
+		a.sender.SendDefinitions(definitions)
+	}
 }

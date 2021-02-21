@@ -20,13 +20,12 @@ import (
 type Sender struct {
 	client    *retryablehttp.Client
 	wg        *sync.WaitGroup
-	url       string
 	apiKey    string
 	userAgent string
 
-	metricsChan chan *models.UsageMetrics
-	stopChan    chan interface{}
-	stopTimeout time.Duration
+	metricsUrl     string
+	definitionsUrl string
+	stopTimeout    time.Duration
 
 	logger logger.Logger
 }
@@ -36,35 +35,31 @@ func NewSender(cfg *Configuration) *Sender {
 	c.RetryWaitMax = 1 * time.Minute
 	c.RetryMax = 8 // Will retry for ~5 minutes
 	c.Logger = logging.NewRetryableLogger(cfg.getLogger())
+
+	baseUrl := fmt.Sprintf("%s://%s/reporting", cfg.getProtocol(), cfg.getEndpoint())
 	return &Sender{
-		client:      c,
-		wg:          &sync.WaitGroup{},
-		url:         fmt.Sprintf("%s://%s/reporting/metrics", cfg.getProtocol(), cfg.getEndpoint()),
-		apiKey:      cfg.ApiKey,
-		userAgent:   fmt.Sprintf("sdk/go/%s", version.GetModuleVersion()),
-		metricsChan: make(chan *models.UsageMetrics),
-		stopChan:    make(chan interface{}),
-		stopTimeout: cfg.getStopTimeout(),
-		logger:      cfg.getLogger(),
+		client:    c,
+		wg:        &sync.WaitGroup{},
+		apiKey:    cfg.ApiKey,
+		userAgent: fmt.Sprintf("sdk/go/%s", version.GetModuleVersion()),
+
+		metricsUrl:     fmt.Sprintf("%s/metrics", baseUrl),
+		definitionsUrl: fmt.Sprintf("%s/definitions", baseUrl),
+		stopTimeout:    cfg.getStopTimeout(),
+
+		logger: cfg.getLogger(),
 	}
 }
 
-func (s *Sender) Start() {
-	for {
-		select {
-		case <-s.stopChan:
-			return
-		case metrics := <-s.metricsChan:
-			s.send(metrics)
-		}
-	}
+func (s *Sender) SendMetrics(metrics *models.UsageMetrics) {
+	s.send(metrics, s.metricsUrl)
 }
 
-func (s *Sender) Send(metrics *models.UsageMetrics) {
-	s.metricsChan <- metrics
+func (s *Sender) SendDefinitions(definitions *models.UsageDefinitions) {
+	s.send(definitions, s.definitionsUrl)
 }
 
-func (s *Sender) send(metrics *models.UsageMetrics) {
+func (s *Sender) send(data interface{}, url string) {
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
@@ -72,26 +67,28 @@ func (s *Sender) send(metrics *models.UsageMetrics) {
 		// Prepare payload
 		r, w := io.Pipe()
 		go func() {
-			err := marshalGzip(w, metrics)
+			err := marshalGzip(w, data)
 			_ = w.CloseWithError(err)
 		}()
 
 		// Send request
-		req, err := retryablehttp.NewRequest("POST", s.url, r)
+		req, err := retryablehttp.NewRequest("POST", url, r)
 		if err != nil {
 			s.logger.Error("unable to create reporting request", map[string]interface{}{
 				"error": err,
+				"url":   url,
 			})
 			return
 		}
 		req.Header.Set("Content-Encoding", "gzip")
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
-		req.Header.Set("user-agent", "sdk/js/${PACKAGE.version}")
+		req.Header.Set("user-agent", s.userAgent)
 		req.Header.Set("x-api-key", s.apiKey)
 		_, err = s.client.Do(req)
 		if err != nil {
 			s.logger.Error("unable to send reporting request", map[string]interface{}{
 				"error": err,
+				"url":   url,
 			})
 		}
 	}()
@@ -99,13 +96,6 @@ func (s *Sender) send(metrics *models.UsageMetrics) {
 
 func (s *Sender) Stop() error {
 	s.logger.Debug("stopping sender", nil)
-
-	// Send remaining metrics
-	s.stopChan <- nil
-	close(s.metricsChan)
-	for sketch := range s.metricsChan {
-		s.send(sketch)
-	}
 
 	// Wait or timeout
 	// Note: this can create goroutine leak, but we don't care since Stop is only call on server exit
@@ -118,8 +108,8 @@ func (s *Sender) Stop() error {
 	case <-c:
 		return nil
 	case <-time.After(s.stopTimeout):
-		s.logger.Error("sending remaining metrics timed out", nil)
-		return errors.New("sending remaining metrics timed out")
+		s.logger.Error("sending remaining requests timed out", nil)
+		return errors.New("sending remaining requests timed out")
 	}
 }
 
