@@ -64,3 +64,6 @@ graphmetrics.Configuration{
 - `FieldBufferSize`: As we do not want to slow down your queries, we process the field metrics async in a goroutine with a buffered channel in between. 
 Usually this buffer is big enough to handle spikes, but it might not be if you have very large and fast queries. 
 In which case, metrics are dropped and a warning is emitted. Please contact us if that happens and try increasing the buffer in the meantime. 
+- `OperationBufferSize`: Same as `FieldBufferSize` but for operations.
+- `StopTimeout`: Change the maximum time the plugin will wait for sending the last metrics when the server is stopping. 
+We suggest leaving it at default (10s) unless you need to kill your process faster.
