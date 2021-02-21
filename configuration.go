@@ -33,56 +33,56 @@ type AdvancedConfiguration struct {
 	StopTimeout         time.Duration
 }
 
-func (c *Configuration) getEndpoint() string {
+func (c *Configuration) GetEndpoint() string {
 	if c.Advanced != nil && c.Advanced.Endpoint != "" {
 		return c.Advanced.Endpoint
 	}
 	return defaultEndpoint
 }
 
-func (c *Configuration) getProtocol() string {
+func (c *Configuration) GetProtocol() string {
 	if c.Advanced != nil && c.Advanced.Http {
 		return "http"
 	}
 	return "https"
 }
 
-func (c *Configuration) getFieldBufferSize() int {
+func (c *Configuration) GetFieldBufferSize() int {
 	if c.Advanced != nil && c.Advanced.FieldBufferSize != 0 {
 		return c.Advanced.FieldBufferSize
 	}
 	return defaultFieldBufferSize
 }
 
-func (c *Configuration) getOperationBufferSize() int {
+func (c *Configuration) GetOperationBufferSize() int {
 	if c.Advanced != nil && c.Advanced.OperationBufferSize != 0 {
 		return c.Advanced.OperationBufferSize
 	}
 	return defaultOperationBufferSize
 }
 
-func (c *Configuration) getDebug() bool {
+func (c *Configuration) GetDebug() bool {
 	if c.Advanced != nil {
 		return c.Advanced.Debug
 	}
 	return false
 }
 
-func (c *Configuration) getStopTimeout() time.Duration {
+func (c *Configuration) GetStopTimeout() time.Duration {
 	if c.Advanced != nil && c.Advanced.StopTimeout != 0 {
 		return c.Advanced.StopTimeout
 	}
 	return defaultStopTimeout
 }
 
-func (c *Configuration) getLogger() logger.Logger {
+func (c *Configuration) GetLogger() logger.Logger {
 	if c.Logger != nil {
 		return c.Logger
 	}
-	return logger.NewDefault(c.getDebug())
+	return logger.NewDefault(c.GetDebug())
 }
 
-func (c *Configuration) getClientExtractor() client.Extractor {
+func (c *Configuration) GetClientExtractor() client.Extractor {
 	if c.ClientExtractor != nil {
 		return c.ClientExtractor
 	}

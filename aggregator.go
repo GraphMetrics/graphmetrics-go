@@ -33,11 +33,11 @@ func NewAggregator(cfg *Configuration) *Aggregator {
 		knownOperations: make(map[string]bool, 10),
 		serverVersion:   cfg.ServerVersion,
 		flushTicker:     time.NewTicker(flushInterval),
-		fieldChan:       make(chan *FieldMessage, cfg.getFieldBufferSize()),
-		operationChan:   make(chan *OperationMessage, cfg.getOperationBufferSize()),
+		fieldChan:       make(chan *FieldMessage, cfg.GetFieldBufferSize()),
+		operationChan:   make(chan *OperationMessage, cfg.GetOperationBufferSize()),
 		stopChan:        make(chan interface{}),
 		sender:          NewSender(cfg),
-		logger:          cfg.getLogger(),
+		logger:          cfg.GetLogger(),
 	}
 }
 

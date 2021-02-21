@@ -34,9 +34,9 @@ func NewSender(cfg *Configuration) *Sender {
 	c := retryablehttp.NewClient()
 	c.RetryWaitMax = 1 * time.Minute
 	c.RetryMax = 8 // Will retry for ~5 minutes
-	c.Logger = logging.NewRetryableLogger(cfg.getLogger())
+	c.Logger = logging.NewRetryableLogger(cfg.GetLogger())
 
-	baseUrl := fmt.Sprintf("%s://%s/reporting", cfg.getProtocol(), cfg.getEndpoint())
+	baseUrl := fmt.Sprintf("%s://%s/reporting", cfg.GetProtocol(), cfg.GetEndpoint())
 	return &Sender{
 		client:    c,
 		wg:        &sync.WaitGroup{},
@@ -45,9 +45,9 @@ func NewSender(cfg *Configuration) *Sender {
 
 		metricsUrl:     fmt.Sprintf("%s/metrics", baseUrl),
 		definitionsUrl: fmt.Sprintf("%s/definitions", baseUrl),
-		stopTimeout:    cfg.getStopTimeout(),
+		stopTimeout:    cfg.GetStopTimeout(),
 
-		logger: cfg.getLogger(),
+		logger: cfg.GetLogger(),
 	}
 }
 
