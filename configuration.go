@@ -27,6 +27,7 @@ type AdvancedConfiguration struct {
 	OperationBufferSize int // If operation metrics are dropped consider increasing it
 	Endpoint            string
 	Http                bool
+	Debug               bool
 }
 
 func (c *Configuration) getEndpoint() string {
@@ -57,11 +58,18 @@ func (c *Configuration) getOperationBufferSize() int {
 	return defaultOperationBufferSize
 }
 
+func (c *Configuration) getDebug() bool {
+	if c.Advanced != nil {
+		return c.Advanced.Debug
+	}
+	return false
+}
+
 func (c *Configuration) getLogger() logger.Logger {
 	if c.Logger != nil {
 		return c.Logger
 	}
-	return logger.NewDefault()
+	return logger.NewDefault(c.getDebug())
 }
 
 func (c *Configuration) getClientExtractor() client.Extractor {
