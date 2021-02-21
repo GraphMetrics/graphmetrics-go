@@ -24,6 +24,7 @@ type Sender struct {
 
 	metricsChan chan *internal.UsageMetrics
 	stopChan    chan interface{}
+	stopTimeout time.Duration
 
 	logger logger.Logger
 }
@@ -41,6 +42,7 @@ func NewSender(cfg *Configuration) *Sender {
 		userAgent:   fmt.Sprintf("sdk/go/%s", internal.GetModuleVersion()),
 		metricsChan: make(chan *internal.UsageMetrics),
 		stopChan:    make(chan interface{}),
+		stopTimeout: cfg.getStopTimeout(),
 		logger:      cfg.getLogger(),
 	}
 }
@@ -113,7 +115,7 @@ func (s *Sender) Stop() error {
 	select {
 	case <-c:
 		return nil
-	case <-time.After(10 * time.Second):
+	case <-time.After(s.stopTimeout):
 		s.logger.Error("sending remaining metrics timed out", nil)
 		return errors.New("sending remaining metrics timed out")
 	}

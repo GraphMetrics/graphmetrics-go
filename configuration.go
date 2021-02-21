@@ -2,6 +2,7 @@ package graphmetrics
 
 import (
 	"context"
+	"time"
 
 	"github.com/graphmetrics/logger-go"
 
@@ -12,6 +13,7 @@ const (
 	defaultEndpoint            = "api.graphmetrics.io"
 	defaultFieldBufferSize     = 1000
 	defaultOperationBufferSize = 20
+	defaultStopTimeout         = 10 * time.Second
 )
 
 type Configuration struct {
@@ -28,6 +30,7 @@ type AdvancedConfiguration struct {
 	Endpoint            string
 	Http                bool
 	Debug               bool
+	StopTimeout         time.Duration
 }
 
 func (c *Configuration) getEndpoint() string {
@@ -63,6 +66,13 @@ func (c *Configuration) getDebug() bool {
 		return c.Advanced.Debug
 	}
 	return false
+}
+
+func (c *Configuration) getStopTimeout() time.Duration {
+	if c.Advanced != nil && c.Advanced.StopTimeout != 0 {
+		return c.Advanced.StopTimeout
+	}
+	return defaultStopTimeout
 }
 
 func (c *Configuration) getLogger() logger.Logger {
