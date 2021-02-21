@@ -17,7 +17,9 @@ func OperationSignature(schema *ast.Schema, operation string, operationName stri
 	}
 
 	// Pre-walker
-	dropUnusedOperations(document, operationName)
+	if operationName != "" {
+		dropUnusedOperations(document, operationName)
+	}
 
 	// Walker
 	seenFragments, detectFragmentUsage := fragmentUsed()
