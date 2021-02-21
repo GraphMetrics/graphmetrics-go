@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	clientsAllocation = 1
-	typesAllocation   = 10
-	fieldsAllocation  = 10
-	relativeAccuracy  = 0.01
+	clientsAllocation    = 1
+	typesAllocation      = 10
+	operationsAllocation = 10
+	fieldsAllocation     = 10
+	relativeAccuracy     = 0.01
 )
 
 type Histogram struct {
@@ -127,7 +128,7 @@ func (t *ContextualizedUsageMetrics) FindOperationMetrics(operationHash string) 
 
 type UsageMetrics struct {
 	Timestamp time.Time                    `json:"timestamp"`
-	Metrics   []ContextualizedUsageMetrics `json:"metric"`
+	Metrics   []ContextualizedUsageMetrics `json:"metrics"`
 }
 
 func (u *UsageMetrics) FindContextMetrics(ClientName string, ClientVersion string, ServerVersion string) *ContextualizedUsageMetrics {
@@ -144,7 +145,8 @@ func (u *UsageMetrics) FindContextMetrics(ClientName string, ClientVersion strin
 			ClientVersion: ClientVersion,
 			ServerVersion: ServerVersion,
 		},
-		Types: make(map[string]*TypeMetrics, typesAllocation),
+		Types:      make(map[string]*TypeMetrics, typesAllocation),
+		Operations: make(map[string]*OperationMetrics, operationsAllocation),
 	}
 	u.Metrics = append(u.Metrics, t)
 	return &t
