@@ -3,15 +3,16 @@ package graphmetrics
 import (
 	"time"
 
-	"github.com/graphmetrics/logger-go"
+	"github.com/graphmetrics/graphmetrics-go/internal/conversion"
+	"github.com/graphmetrics/graphmetrics-go/internal/models"
 
-	"github.com/graphmetrics/graphmetrics-go/internal"
+	"github.com/graphmetrics/logger-go"
 )
 
 const flushInterval = 1 * time.Minute
 
 type Aggregator struct {
-	metrics       *internal.UsageMetrics
+	metrics       *models.UsageMetrics
 	serverVersion string
 
 	flushTicker   *time.Ticker
@@ -25,7 +26,7 @@ type Aggregator struct {
 
 func NewAggregator(cfg *Configuration) *Aggregator {
 	return &Aggregator{
-		metrics:       internal.NewUsageMetrics(),
+		metrics:       models.NewUsageMetrics(),
 		serverVersion: cfg.ServerVersion,
 		flushTicker:   time.NewTicker(flushInterval),
 		fieldChan:     make(chan *FieldMessage, cfg.getFieldBufferSize()),
@@ -102,7 +103,7 @@ func (a *Aggregator) processField(msg *FieldMessage) {
 		})
 		return
 	}
-	fieldMetrics.ErrorCount += internal.Bool2Int(msg.Error != nil)
+	fieldMetrics.ErrorCount += conversion.Bool2Int(msg.Error != nil)
 	fieldMetrics.Count += 1
 	fieldMetrics.ReturnType = msg.ReturnType
 }
@@ -122,7 +123,7 @@ func (a *Aggregator) processOperation(msg *OperationMessage) {
 		})
 		return
 	}
-	operationMetrics.ErrorCount += internal.Bool2Int(msg.HasErrors)
+	operationMetrics.ErrorCount += conversion.Bool2Int(msg.HasErrors)
 	operationMetrics.Count += 1
 }
 
@@ -131,7 +132,7 @@ func (a *Aggregator) flush() {
 		return
 	}
 	metrics := a.metrics
-	a.metrics = internal.NewUsageMetrics()
+	a.metrics = models.NewUsageMetrics()
 	metrics.Timestamp = time.Now() // We prefer end time as the TS
 	a.sender.Send(metrics)
 }

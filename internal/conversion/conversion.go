@@ -1,4 +1,4 @@
-package internal
+package conversion
 
 func Bool2Int(b bool) int32 {
 	if b {

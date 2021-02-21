@@ -9,10 +9,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/graphmetrics/graphmetrics-go/internal/logging"
+	"github.com/graphmetrics/graphmetrics-go/internal/models"
+	"github.com/graphmetrics/graphmetrics-go/internal/version"
+
 	"github.com/graphmetrics/logger-go"
 	"github.com/hashicorp/go-retryablehttp"
-
-	"github.com/graphmetrics/graphmetrics-go/internal"
 )
 
 type Sender struct {
@@ -22,7 +24,7 @@ type Sender struct {
 	apiKey    string
 	userAgent string
 
-	metricsChan chan *internal.UsageMetrics
+	metricsChan chan *models.UsageMetrics
 	stopChan    chan interface{}
 	stopTimeout time.Duration
 
@@ -33,14 +35,14 @@ func NewSender(cfg *Configuration) *Sender {
 	c := retryablehttp.NewClient()
 	c.RetryWaitMax = 1 * time.Minute
 	c.RetryMax = 8 // Will retry for ~5 minutes
-	c.Logger = internal.NewRetryableLogger(cfg.getLogger())
+	c.Logger = logging.NewRetryableLogger(cfg.getLogger())
 	return &Sender{
 		client:      c,
 		wg:          &sync.WaitGroup{},
 		url:         fmt.Sprintf("%s://%s/reporting/metrics", cfg.getProtocol(), cfg.getEndpoint()),
 		apiKey:      cfg.ApiKey,
-		userAgent:   fmt.Sprintf("sdk/go/%s", internal.GetModuleVersion()),
-		metricsChan: make(chan *internal.UsageMetrics),
+		userAgent:   fmt.Sprintf("sdk/go/%s", version.GetModuleVersion()),
+		metricsChan: make(chan *models.UsageMetrics),
 		stopChan:    make(chan interface{}),
 		stopTimeout: cfg.getStopTimeout(),
 		logger:      cfg.getLogger(),
@@ -58,11 +60,11 @@ func (s *Sender) Start() {
 	}
 }
 
-func (s *Sender) Send(metrics *internal.UsageMetrics) {
+func (s *Sender) Send(metrics *models.UsageMetrics) {
 	s.metricsChan <- metrics
 }
 
-func (s *Sender) send(metrics *internal.UsageMetrics) {
+func (s *Sender) send(metrics *models.UsageMetrics) {
 	s.wg.Add(1)
 	go func() {
 		defer s.wg.Done()
