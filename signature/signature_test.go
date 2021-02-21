@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTransforms_StableSignature(t *testing.T) {
+func TestSignature_StableSignature(t *testing.T) {
 	operation := `
 fragment Test on Query {
 	field(id: "1", x: 1, y: 2.3)	
