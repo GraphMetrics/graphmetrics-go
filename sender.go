@@ -16,10 +16,11 @@ import (
 )
 
 type Sender struct {
-	client *retryablehttp.Client
-	wg     *sync.WaitGroup
-	url    string
-	apiKey string
+	client    *retryablehttp.Client
+	wg        *sync.WaitGroup
+	url       string
+	apiKey    string
+	userAgent string
 
 	metricsChan chan *internal.UsageMetrics
 	stopChan    chan interface{}
@@ -37,6 +38,7 @@ func NewSender(cfg *Configuration) *Sender {
 		wg:          &sync.WaitGroup{},
 		url:         fmt.Sprintf("%s://%s/reporting/metrics", cfg.getProtocol(), cfg.getEndpoint()),
 		apiKey:      cfg.ApiKey,
+		userAgent:   fmt.Sprintf("sdk/go/%s", internal.GetModuleVersion()),
 		metricsChan: make(chan *internal.UsageMetrics),
 		stopChan:    make(chan interface{}),
 		logger:      cfg.getLogger(),
@@ -80,6 +82,7 @@ func (s *Sender) send(metrics *internal.UsageMetrics) {
 		}
 		req.Header.Set("Content-Encoding", "gzip")
 		req.Header.Set("Content-Type", "application/json; charset=utf-8")
+		req.Header.Set("user-agent", "sdk/js/${PACKAGE.version}")
 		req.Header.Set("x-api-key", s.apiKey)
 		_, err = s.client.Do(req)
 		if err != nil {
