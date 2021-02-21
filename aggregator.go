@@ -14,10 +14,11 @@ type Aggregator struct {
 	metrics       *internal.UsageMetrics
 	serverVersion string
 
-	flushTicker *time.Ticker
-	fieldChan   chan *FieldMessage
-	stopChan    chan interface{}
-	sender      *Sender
+	flushTicker   *time.Ticker
+	fieldChan     chan *FieldMessage
+	operationChan chan *OperationMessage
+	stopChan      chan interface{}
+	sender        *Sender
 
 	logger logger.Logger
 }
@@ -28,6 +29,7 @@ func NewAggregator(cfg *Configuration) *Aggregator {
 		serverVersion: cfg.ServerVersion,
 		flushTicker:   time.NewTicker(flushInterval),
 		fieldChan:     make(chan *FieldMessage, cfg.getFieldBufferSize()),
+		operationChan: make(chan *OperationMessage, cfg.getOperationBufferSize()),
 		stopChan:      make(chan interface{}),
 		sender:        NewSender(cfg),
 		logger:        cfg.getLogger(),
@@ -42,8 +44,11 @@ func (a *Aggregator) Start() {
 			return
 		case <-a.flushTicker.C:
 			a.flush()
+		case o := <-a.operationChan:
+			a.processOperation(o)
 		case f := <-a.fieldChan:
 			a.processField(f)
+			break
 		}
 	}
 }
@@ -67,18 +72,27 @@ func (a *Aggregator) PushField(msg *FieldMessage) {
 	case a.fieldChan <- msg:
 		return
 	default:
-		a.logger.Warn("graphmetrics aggregator buffer overflowing, dropping message", nil)
+		a.logger.Warn("graphmetrics aggregator field buffer overflowing, dropping message", nil)
+	}
+}
+
+func (a *Aggregator) PushOperation(msg *OperationMessage) {
+	select {
+	case a.operationChan <- msg:
+		return
+	default:
+		a.logger.Warn("graphmetrics aggregator operation buffer overflowing, dropping message", nil)
 	}
 }
 
 func (a *Aggregator) processField(msg *FieldMessage) {
-	// Find field metric
-	typesMetrics := a.metrics.FindTypesMetrics(msg.Client.Name, msg.Client.Version, a.serverVersion)
-	typeMetric := typesMetrics.FindTypeMetric(msg.TypeName)
-	fieldMetric := typeMetric.FindFieldMetric(msg.FieldName)
+	// Find field metrics
+	metrics := a.metrics.FindContextMetrics(msg.Client.Name, msg.Client.Version, a.serverVersion)
+	typeMetrics := metrics.FindTypeMetrics(msg.TypeName)
+	fieldMetrics := typeMetrics.FindFieldMetrics(msg.FieldName)
 
 	// Insert message
-	err := fieldMetric.Histogram.Add(float64(msg.Duration))
+	err := fieldMetrics.Histogram.Add(float64(msg.Duration))
 	if err != nil {
 		a.logger.Error("unable to insert field duration", map[string]interface{}{
 			"error":    err,
@@ -88,13 +102,32 @@ func (a *Aggregator) processField(msg *FieldMessage) {
 		})
 		return
 	}
-	fieldMetric.ErrorCount += internal.Bool2Int(msg.Error != nil)
-	fieldMetric.Count += 1
-	fieldMetric.ReturnType = msg.ReturnType
+	fieldMetrics.ErrorCount += internal.Bool2Int(msg.Error != nil)
+	fieldMetrics.Count += 1
+	fieldMetrics.ReturnType = msg.ReturnType
+}
+
+func (a *Aggregator) processOperation(msg *OperationMessage) {
+	// Find operations metric
+	metrics := a.metrics.FindContextMetrics(msg.Client.Name, msg.Client.Version, a.serverVersion)
+	operationMetrics := metrics.FindOperationMetrics(msg.Hash)
+
+	// Insert message
+	err := operationMetrics.Histogram.Add(float64(msg.Duration))
+	if err != nil {
+		a.logger.Error("unable to insert operation duration", map[string]interface{}{
+			"error":     err,
+			"duration":  msg.Duration,
+			"operation": msg.Name,
+		})
+		return
+	}
+	operationMetrics.ErrorCount += internal.Bool2Int(msg.HasErrors)
+	operationMetrics.Count += 1
 }
 
 func (a *Aggregator) flush() {
-	if len(a.metrics.Types) == 0 {
+	if len(a.metrics.Metrics) == 0 {
 		return
 	}
 	metrics := a.metrics

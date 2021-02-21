@@ -19,14 +19,14 @@ type Histogram struct {
 	Counts  []int32 `json:"counts"`
 }
 
-type FieldMetric struct {
+type FieldMetrics struct {
 	ReturnType string             `json:"returnType"`
 	Count      int32              `json:"count"`
 	ErrorCount int32              `json:"errorCount"`
 	Histogram  *ddsketch.DDSketch `json:"-"`
 }
 
-func (f *FieldMetric) MarshalJSON() ([]byte, error) {
+func (f *FieldMetrics) MarshalJSON() ([]byte, error) {
 	// extract keys and counts from histogram bins
 	// conservative size of half the count will be in the same bin
 	indexes := make([]int16, 0, f.Count/2)
@@ -37,7 +37,7 @@ func (f *FieldMetric) MarshalJSON() ([]byte, error) {
 		counts = append(counts, b.Count())
 	}
 
-	type Alias FieldMetric
+	type Alias FieldMetrics
 	return json.Marshal(&struct {
 		Histogram Histogram
 		*Alias
@@ -47,20 +47,47 @@ func (f *FieldMetric) MarshalJSON() ([]byte, error) {
 	})
 }
 
-type TypeMetric struct {
-	Fields map[string]*FieldMetric `json:"fields"`
+type TypeMetrics struct {
+	Fields map[string]*FieldMetrics `json:"fields"`
 }
 
-func (t *TypeMetric) FindFieldMetric(fieldName string) *FieldMetric {
+func (t *TypeMetrics) FindFieldMetrics(fieldName string) *FieldMetrics {
 	if v, ok := t.Fields[fieldName]; ok {
 		return v
 	} else {
 		h, _ := ddsketch.LogUnboundedDenseDDSketch(relativeAccuracy)
-		t.Fields[fieldName] = &FieldMetric{
+		t.Fields[fieldName] = &FieldMetrics{
 			Histogram: h,
 		}
 		return t.Fields[fieldName]
 	}
+}
+
+type OperationMetrics struct {
+	Count      int32              `json:"count"`
+	ErrorCount int32              `json:"errorCount"`
+	Histogram  *ddsketch.DDSketch `json:"-"`
+}
+
+func (f *OperationMetrics) MarshalJSON() ([]byte, error) {
+	// extract keys and counts from histogram bins
+	// conservative size of half the count will be in the same bin
+	indexes := make([]int16, 0, f.Count/2)
+	counts := make([]int32, 0, f.Count/2)
+	for b := range f.Histogram.Bins() {
+		// we made some guarantees in the sketch so all indexes are within 16 bits
+		indexes = append(indexes, int16(b.Index()))
+		counts = append(counts, b.Count())
+	}
+
+	type Alias OperationMetrics
+	return json.Marshal(&struct {
+		Histogram Histogram
+		*Alias
+	}{
+		Histogram: Histogram{Indexes: indexes, Counts: counts},
+		Alias:     (*Alias)(f),
+	})
 }
 
 type MetricsContext struct {
@@ -69,50 +96,63 @@ type MetricsContext struct {
 	ServerVersion string `json:"serverVersion"`
 }
 
-type ContextualizedTypesMetrics struct {
-	Context MetricsContext         `json:"context"`
-	Types   map[string]*TypeMetric `json:"types"`
+type ContextualizedUsageMetrics struct {
+	Context    MetricsContext               `json:"context"`
+	Types      map[string]*TypeMetrics      `json:"types"`
+	Operations map[string]*OperationMetrics `json:"operations"`
 }
 
-func (t *ContextualizedTypesMetrics) FindTypeMetric(typeName string) *TypeMetric {
+func (t *ContextualizedUsageMetrics) FindTypeMetrics(typeName string) *TypeMetrics {
 	if v, ok := t.Types[typeName]; ok {
 		return v
 	} else {
-		t.Types[typeName] = &TypeMetric{
-			Fields: make(map[string]*FieldMetric, fieldsAllocation),
+		t.Types[typeName] = &TypeMetrics{
+			Fields: make(map[string]*FieldMetrics, fieldsAllocation),
 		}
 		return t.Types[typeName]
 	}
 }
 
-type UsageMetrics struct {
-	Timestamp time.Time                    `json:"timestamp"`
-	Types     []ContextualizedTypesMetrics `json:"types"`
+func (t *ContextualizedUsageMetrics) FindOperationMetrics(operationHash string) *OperationMetrics {
+	if v, ok := t.Operations[operationHash]; ok {
+		return v
+	} else {
+		h, _ := ddsketch.LogUnboundedDenseDDSketch(relativeAccuracy)
+		t.Operations[operationHash] = &OperationMetrics{
+			Histogram: h,
+		}
+		return t.Operations[operationHash]
+	}
 }
 
-func (u *UsageMetrics) FindTypesMetrics(ClientName string, ClientVersion string, ServerVersion string) *ContextualizedTypesMetrics {
-	for _, t := range u.Types {
+type UsageMetrics struct {
+	Timestamp time.Time                    `json:"timestamp"`
+	Metrics   []ContextualizedUsageMetrics `json:"metric"`
+}
+
+func (u *UsageMetrics) FindContextMetrics(ClientName string, ClientVersion string, ServerVersion string) *ContextualizedUsageMetrics {
+	for _, t := range u.Metrics {
 		if t.Context.ClientName == ClientName &&
 			t.Context.ClientVersion == ClientVersion &&
 			t.Context.ServerVersion == ServerVersion {
 			return &t
 		}
 	}
-	t := ContextualizedTypesMetrics{
+	t := ContextualizedUsageMetrics{
 		Context: MetricsContext{
 			ClientName:    ClientName,
 			ClientVersion: ClientVersion,
 			ServerVersion: ServerVersion,
 		},
-		Types: make(map[string]*TypeMetric, typesAllocation),
+		Types: make(map[string]*TypeMetrics, typesAllocation),
 	}
-	u.Types = append(u.Types, t)
+	u.Metrics = append(u.Metrics, t)
 	return &t
 }
 
 func NewUsageMetrics() *UsageMetrics {
 	return &UsageMetrics{
 		Timestamp: time.Time{},
-		Types:     make([]ContextualizedTypesMetrics, 0, clientsAllocation),
+		Metrics:   make([]ContextualizedUsageMetrics, 0, clientsAllocation),
 	}
 }

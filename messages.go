@@ -14,3 +14,11 @@ type FieldMessage struct {
 	Duration   time.Duration
 	Client     client.Details
 }
+
+type OperationMessage struct {
+	Name      string
+	Hash      string
+	HasErrors bool
+	Duration  time.Duration
+	Client    client.Details
+}

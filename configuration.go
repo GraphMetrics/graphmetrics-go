@@ -9,8 +9,9 @@ import (
 )
 
 const (
-	defaultEndpoint        = "api.graphmetrics.io"
-	defaultFieldBufferSize = 1000
+	defaultEndpoint            = "api.graphmetrics.io"
+	defaultFieldBufferSize     = 1000
+	defaultOperationBufferSize = 20
 )
 
 type Configuration struct {
@@ -22,9 +23,10 @@ type Configuration struct {
 }
 
 type AdvancedConfiguration struct {
-	FieldBufferSize int // If field metrics are dropped consider increasing it
-	Endpoint        string
-	Http            bool
+	FieldBufferSize     int // If field metrics are dropped consider increasing it
+	OperationBufferSize int // If operation metrics are dropped consider increasing it
+	Endpoint            string
+	Http                bool
 }
 
 func (c *Configuration) getEndpoint() string {
@@ -46,6 +48,13 @@ func (c *Configuration) getFieldBufferSize() int {
 		return c.Advanced.FieldBufferSize
 	}
 	return defaultFieldBufferSize
+}
+
+func (c *Configuration) getOperationBufferSize() int {
+	if c.Advanced != nil && c.Advanced.OperationBufferSize != 0 {
+		return c.Advanced.OperationBufferSize
+	}
+	return defaultOperationBufferSize
 }
 
 func (c *Configuration) getLogger() logger.Logger {
