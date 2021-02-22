@@ -4,6 +4,7 @@ import "time"
 
 type OperationDefinition struct {
 	Name      string `json:"name"`
+	Type      string `json:"type"`
 	Hash      string `json:"hash"`
 	Signature string `json:"signature"`
 }

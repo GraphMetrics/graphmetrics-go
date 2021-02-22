@@ -17,6 +17,7 @@ type FieldMessage struct {
 
 type OperationMessage struct {
 	Name      string
+	Type      string
 	Hash      string
 	Signature string
 	HasErrors bool

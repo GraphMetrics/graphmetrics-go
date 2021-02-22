@@ -137,6 +137,7 @@ func (a *Aggregator) processOperation(msg *OperationMessage) {
 	if !a.knownOperations[msg.Hash] {
 		a.definitions.Operations = append(a.definitions.Operations, models.OperationDefinition{
 			Name:      msg.Name,
+			Type:      msg.Type,
 			Hash:      msg.Hash,
 			Signature: msg.Signature,
 		})
